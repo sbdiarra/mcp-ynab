@@ -33,6 +33,54 @@ def _error_response(status_code: int, error_id: str, detail: str) -> httpx.Respo
     )
 
 
+class TestPathEncoding:
+    def test_encodes_dynamic_path_segments(self):
+        path = YNABClient._path(
+            "plans",
+            "budget/../x",
+            "transactions",
+            "../scheduled_transactions/sched123",
+        )
+
+        assert path == (
+            "/plans/budget%2F..%2Fx/transactions/"
+            "..%2Fscheduled_transactions%2Fsched123"
+        )
+
+    @pytest.mark.asyncio
+    async def test_delete_transaction_does_not_traverse_path(self, client):
+        captured_urls = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            captured_urls.append(request.url.raw_path.decode())
+            return httpx.Response(
+                200,
+                json={
+                    "data": {
+                        "transaction": {
+                            "id": "t1",
+                            "date": "2026-03-15",
+                            "amount": -50250,
+                            "deleted": True,
+                        }
+                    }
+                },
+                request=request,
+            )
+
+        client._client = httpx.AsyncClient(
+            base_url=client.BASE_URL,
+            transport=httpx.MockTransport(handler),
+        )
+
+        await client.delete_transaction("../scheduled_transactions/sched123", "budget123")
+
+        assert captured_urls[0] == (
+            "/v1/plans/budget123/transactions/"
+            "..%2Fscheduled_transactions%2Fsched123"
+        )
+
+
 # ── Error Handling ────────────────────────────────────────────
 
 
