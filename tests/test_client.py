@@ -47,6 +47,10 @@ class TestPathEncoding:
             "..%2Fscheduled_transactions%2Fsched123"
         )
 
+    def test_encodes_bare_dot_segments(self):
+        assert YNABClient._path("plans", ".", "accounts") == "/plans/%2E/accounts"
+        assert YNABClient._path("plans", "..", "accounts") == "/plans/%2E%2E/accounts"
+
     @pytest.mark.asyncio
     async def test_delete_transaction_does_not_traverse_path(self, client):
         captured_urls = []

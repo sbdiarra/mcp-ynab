@@ -88,7 +88,15 @@ class YNABClient:
     @staticmethod
     def _path(*segments: str) -> str:
         """Build an API path with every component encoded as a URL path segment."""
-        return "/" + "/".join(quote(str(segment), safe="") for segment in segments)
+        return "/" + "/".join(YNABClient._path_segment(segment) for segment in segments)
+
+    @staticmethod
+    def _path_segment(segment: str) -> str:
+        """Encode one URL path segment without leaving dot segments bare."""
+        encoded = quote(str(segment), safe="")
+        if encoded in {".", ".."}:
+            return encoded.replace(".", "%2E")
+        return encoded
 
     @staticmethod
     def _add_knowledge(params: dict | None, knowledge: int | None) -> dict | None:
