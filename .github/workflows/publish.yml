@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: refs/tags/${{ github.event.release.tag_name }}
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --group dev
       - run: uv run pytest
@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: refs/tags/${{ github.event.release.tag_name }}
       - uses: astral-sh/setup-uv@v6
       - name: Verify release tag matches pyproject version
         run: |
